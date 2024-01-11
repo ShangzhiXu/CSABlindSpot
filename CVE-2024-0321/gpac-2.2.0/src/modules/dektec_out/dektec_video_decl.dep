@@ -1,0 +1,22 @@
+../modules/dektec_out/dektec_video_decl.o: \
+  ../modules/dektec_out/dektec_video_decl.c \
+  ../modules/dektec_out/dektec_video.h \
+  /home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/include/gpac/filters.h \
+  /home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/include/gpac/tools.h \
+  /home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/include/gpac/setup.h \
+  /home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/config.h \
+  /home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/include/gpac/version.h \
+  /home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/include/gpac/Remotery.h \
+  /home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/include/gpac/list.h \
+  /home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/include/gpac/events.h \
+  /home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/include/gpac/maths.h \
+  /home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/include/gpac/events_constants.h \
+  /home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/include/gpac/constants.h \
+  /home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/include/gpac/download.h \
+  /home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/include/gpac/config_file.h \
+  /home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/include/gpac/cache.h \
+  /home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/include/gpac/main.h \
+  /home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/include/gpac/utf.h \
+  /home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/include/gpac/color.h \
+  /home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/include/gpac/thread.h \
+  /home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/include/gpac/module.h

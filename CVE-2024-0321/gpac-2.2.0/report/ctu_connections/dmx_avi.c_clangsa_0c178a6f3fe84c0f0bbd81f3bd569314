@@ -1,0 +1,17 @@
+/home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/src/utils/alloc.c
+/home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/src/media_tools/av_parsers.c
+/home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/src/utils/error.c
+/home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/src/media_tools/avilib.c
+/home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/src/filter_core/filter_session.c
+/home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/src/utils/bitstream.c
+/home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/src/filter_core/filter_props.c
+/home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/src/filter_core/filter_pid.c
+/home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/src/filter_core/filter_pck.c
+/home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/src/filter_core/filter.c
+/home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/src/utils/os_divers.c
+/home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/src/media_tools/media_import.c
+/home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/src/utils/os_thread.c
+/home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/src/utils/os_file.c
+/home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/src/filter_core/filter_queue.c
+/home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/src/utils/constants.c
+/home/shangzhixu/CSABlindSpot/CVE-2024-0321/gpac-2.2.0/src/utils/list.c

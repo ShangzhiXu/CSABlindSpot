@@ -1,0 +1,1 @@
+{"[\"/usr/bin/clang-12\", \"c\", [\"-std=gnu99\"]]": {"compiler_includes": ["/usr/local/include", "/usr/lib/llvm-12/lib/clang/12.0.0/include", "/usr/include/x86_64-linux-gnu", "/usr/include"], "compiler_standard": "-std=gnu17", "target": "x86_64-pc-linux-gnu"}}
