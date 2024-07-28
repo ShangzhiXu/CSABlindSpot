@@ -1,0 +1,22 @@
+../modules/dektec_out/dektec_video_decl.o: \
+ ../modules/dektec_out/dektec_video_decl.c \
+ ../modules/dektec_out/dektec_video.h \
+ /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/include/gpac/filters.h \
+ /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/include/gpac/tools.h \
+ /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/include/gpac/setup.h \
+ /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/config.h \
+ /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/include/gpac/version.h \
+ /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/include/gpac/Remotery.h \
+ /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/include/gpac/list.h \
+ /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/include/gpac/events.h \
+ /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/include/gpac/maths.h \
+ /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/include/gpac/events_constants.h \
+ /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/include/gpac/constants.h \
+ /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/include/gpac/download.h \
+ /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/include/gpac/config_file.h \
+ /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/include/gpac/cache.h \
+ /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/include/gpac/main.h \
+ /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/include/gpac/utf.h \
+ /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/include/gpac/color.h \
+ /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/include/gpac/thread.h \
+ /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/include/gpac/module.h
