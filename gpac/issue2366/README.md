@@ -36,3 +36,40 @@ The sps has the range of 32, but in program it's judged with the range of 255(wh
 However CSA can't report this bug because of the nested structures
 ![pic1](./assets/csa.png)
 
+Even if we test this kind of bug in a simple program with a naive structure, CSA still can not detect this bug.
+test.c:
+```c
+#include<stdio.h>
+#include<stdlib.h>
+
+typedef struct
+{
+	int sps[32]; /* range allowed in the spec should be 0..31 */
+    int sensitive; // shall not be modified
+	int sps_id[255]; /* range allowed in the spec should be 0..255 */
+
+} AVCState;
+
+int main()
+{
+    AVCState *avc = (AVCState *)malloc(sizeof(AVCState));
+    avc->sensitive = 0;
+    int i;
+    scanf("%d", &i);
+    if( i >= 255)
+    {
+        exit(0);
+    }
+    avc->sps[i] = i;
+    printf("success, avc->sps[%d] = %d\n",i , avc->sps[i]);
+
+    printf("avc->sensitive = %d\n", avc->sensitive);
+    for(i=0; i<255; i++)
+    {
+        avc->sps_id[i] = i;
+    }
+    return 0;
+}
+```
+
+![pic2](./assets/test.png)
