@@ -12,7 +12,7 @@ The bug exists in /src/media_tools/av_parsers.c:5684 in function avc_parse_slice
 5684	si->sps = &avc->sps[si->pps->sps_id];
 ```
 
-The type of variable sps is sps is AVC_SPS, which is defined in /include/internal/media_dev.h
+The type of variable sps is sps is AVC_SPS, which is defined in /include/internal/media_dev.h:246
 
 ```c
 typedef struct
@@ -33,10 +33,24 @@ typedef struct
 
 The sps has the range of 32, but in program it's judged with the range of 255(which is the range of pps array)
 
+callstack:
+```
+ ► 0   0x7ffff0894a0e avc_parse_slice+1215
+   1   0x7ffff089e3bd gf_avc_parse_nalu+2342
+   2   0x7ffff19d0832 gf_inspect_dump_nalu_internal+50502
+   3   0x7ffff19d3e6d gf_inspect_dump_nalu+90
+   4   0x5555556b65c7 dump_isom_nal_ex+35706
+   5   0x5555556be46e dump_isom_xml+1924
+   6   0x5555556a204a mp4box_main+9759
+   7   0x5555556a44cc main+36
+```
+
 However CSA can't report this bug because of the nested structures
 ![pic1](./assets/csa.png)
 
-Even if we test this kind of bug in a simple program with a naive structure, CSA still can not detect this bug.
+
+If we test this kind of bug in a simple program with a naive structure, CSA can detect this bug with specified arguments.
+
 test.c:
 ```c
 #include<stdio.h>
@@ -71,5 +85,7 @@ int main()
     return 0;
 }
 ```
-
 ![pic2](./assets/test.png)
+
+But still can not detect the one in av_parsers.c
+

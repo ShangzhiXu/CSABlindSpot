@@ -14,12 +14,16 @@ int main()
     AVCState *avc = (AVCState *)malloc(sizeof(AVCState));
     avc->sensitive = 0;
     int i;
-    scanf("%d", &i);
-    if( i >= 255)
+    //scanf("%d", &i);
+    /*f( i >= 255)
     {
         exit(0);
+    }*/
+    for(i=0; i<255; i++)
+    {
+        avc->sps[i] = i;
     }
-    avc->sps[i] = i;
+    
     printf("success, avc->sps[%d] = %d\n",i , avc->sps[i]);
 
     printf("avc->sensitive = %d\n", avc->sensitive);
