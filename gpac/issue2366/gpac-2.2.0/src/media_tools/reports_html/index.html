@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Plist HTML Viewer</title>
+
+    <meta charset="UTF-8">
+
+    <style type="text/css">
+      .severity-low {
+  background-color: #669603;
+}
+
+.severity-low:after {
+  content : 'L';
+}
+
+.severity-unspecified {
+  background-color: #666666;
+}
+
+.severity-unspecified:after {
+  content : 'U';
+}
+
+.severity-style {
+  background-color: #9932cc;
+}
+
+.severity-style:after {
+  content : 'S';
+}
+
+.severity-medium {
+  background-color: #a9d323;
+  color: black;
+}
+
+.severity-medium:after {
+  content : 'M';
+}
+
+.severity-high {
+  background-color: #ffa800;
+}
+
+.severity-high:after {
+  content : 'H';
+}
+
+.severity-critical {
+  background-color: #e92625;
+}
+
+.severity-critical:after {
+  content : 'C';
+}
+
+i[class*="severity-"] {
+  line-height: normal;
+  text-transform: capitalize;
+  font-size: 0.8em;
+  font-weight: bold;
+  color: white;
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  text-align: center;
+  font-family: sans-serif;
+}
+
+      html, body {
+  width: 100%;
+  height: 100%;
+  padding: 0px;
+  margin: 0px;
+}
+
+div.container {
+  padding: 10px;
+}
+
+#content {
+  height: 100%;
+  display: block;
+  overflow: hidden;
+}
+
+#content > div {
+  margin: 10px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  height: 97%;
+}
+
+#side-bar {
+  overflow: auto;
+}
+
+#editor-wrapper {
+  overflow: hidden;
+}
+
+.button {
+  background-color: #f1f1f1;
+  text-decoration: none;
+  display: inline-block;
+  padding: 8px 16px;
+  color: black;
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.review-status {
+  color: white;
+  text-align: center;
+}
+
+.review-status-confirmed {
+  background-color: #e92625;
+}
+
+.review-status-false-positive {
+  background-color: grey;
+}
+
+.review-status-intentional {
+  background-color: #669603;
+}
+
+      table th {
+  font-size: 1.2em;
+  color: #fff;
+  line-height: 1.4;
+  background-color: #007ea7;
+}
+
+table th.active,
+table th.sortable:hover {
+  cursor: pointer;
+  background-color: #2da6ce;
+}
+
+table tr:nth-child(even) {
+  background-color: #f5f5f5;
+}
+
+table tr > td {
+  padding: 5px;
+}
+
+      #report-list {
+  width: 100%;
+}
+
+#report-list .bug-path-length {
+  width: 5%;
+  text-align: center;
+}
+
+#report-list .severity {
+  text-align: center;
+}
+
+    </style>
+
+    <script>
+      function setNonCompatibleBrowserMessage() {
+  document.body.innerHTML =
+    '<h2 style="margin-left: 20px;">Your browser is not compatible with CodeChecker Viewer!</h2> \
+     <p style="margin-left: 20px;">The version required for the following browsers are:</p> \
+     <ul style="margin-left: 20px;"> \
+     <li>Internet Explorer: version 9 or newer</li> \
+     <li>Firefox: version 22.0 or newer</li> \
+     </ul>';
+}
+
+// http://stackoverflow.com/questions/5916900/how-can-you-detect-the-version-of-a-browser
+var browserVersion = (function(){
+  var ua = navigator.userAgent, tem,
+    M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
+
+  if (/trident/i.test(M[1])) {
+    tem = /\brv[ :]+(\d+)/g.exec(ua) || [];
+    return 'IE ' + (tem[1] || '');
+  }
+
+  if (M[1] === 'Chrome') {
+    tem = ua.match(/\b(OPR|Edge)\/(\d+)/);
+    if (tem != null) return tem.slice(1).join(' ').replace('OPR', 'Opera');
+  }
+
+  M = M[2] ? [M[1], M[2]] : [navigator.appName, navigator.appVersion, '-?'];
+  if ((tem = ua.match(/version\/(\d+)/i)) != null) M.splice(1, 1, tem[1]);
+    return M.join(' ');
+})();
+
+var pos = browserVersion.indexOf(' ');
+var browser = browserVersion.substr(0, pos);
+var version = parseInt(browserVersion.substr(pos + 1));
+
+var browserCompatible
+  = browser === 'Firefox'
+  ? version >= 22
+  : browser === 'IE'
+  ? version >= 9
+  : true;
+
+      // -------------------------------------------------------------------------
+//  Part of the CodeChecker project, under the Apache License v2.0 with
+//  LLVM Exceptions. See LICENSE for license information.
+//  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// -------------------------------------------------------------------------
+
+var BugList = {
+
+  init : function () {
+    this.initTableSort();
+    this.initBugPathLength();
+    this.initByUrl();
+  },
+
+  initTableSort : function () {
+    var that = this;
+
+    var table = document.getElementById('report-list');
+    table.querySelectorAll('th').forEach(function (column) {
+      if (that.canSort(column.id)) {
+        column.addEventListener('click', function () {
+          that.sort(column.id);
+        });
+        column.classList.add('sortable');
+      }
+    });
+  },
+
+  initBugPathLength : function () {
+    var that = this;
+
+    document.querySelectorAll('.bug-path-length').forEach(
+    function (widget) {
+      widget.style.backgroundColor =
+        that.generateRedGreenGradientColor(widget.innerHTML, 20, 0.5);
+    });
+  },
+
+  initByUrl : function () {
+    var state = {};
+    window.location.hash.substr(1).split('&').forEach(function (s) {
+      var parts = s.split('=');
+      state[parts[0]] = parts[1];
+    });
+
+    var column = state['sort'] ? state['sort'] : 'file-path';
+    var asc = state['asc'] ? !!parseInt(state['asc']) : true;
+    this.sort(column, asc);
+  },
+
+  generateRedGreenGradientColor : function (value, max, opacity) {
+    var red   = (255 * value) / max;
+    var green = (255 * (max - value)) / max;
+    var blue  = 0;
+    return 'rgba(' + parseInt(red) + ',' + parseInt(green) + ',' + blue
+      + ',' + opacity + ')';
+  },
+
+  canSort : function (columnId) {
+    return columnId === 'report-id' ||
+           columnId === 'file-path' ||
+           columnId === 'severity' ||
+           columnId === 'checker-name' ||
+           columnId === 'message' ||
+           columnId === 'bug-path-length' ||
+           columnId === 'review-status';
+  },
+
+  compare : function (columnId, a, b, asc) {
+    switch (columnId) {
+      case 'report-id':
+      case 'bug-path-length':
+        return asc
+          ? parseInt(a.innerHTML) > parseInt(b.innerHTML)
+          : parseInt(a.innerHTML) < parseInt(b.innerHTML);
+
+      case 'file-path':
+        var fileA = a.getAttribute('file');
+        var fileB = b.getAttribute('file');
+        var lineA = parseInt(a.getAttribute('line'));
+        var lineB = parseInt(b.getAttribute('line'));
+
+        if (asc) {
+          if (fileA > fileB) {
+            return true;
+          } else if (fileA === fileB) {
+            return lineA > lineB ? true : false;
+          } else {
+            return false;
+          }
+        } else {
+          if (fileA < fileB) {
+            return true;
+          } else if (fileA === fileB) {
+            return lineA < lineB ? true : false;
+          } else {
+            return false;
+          }
+        }
+
+      case 'severity':
+        return asc
+          ? a.getAttribute('severity') > b.getAttribute('severity')
+          : a.getAttribute('severity') < b.getAttribute('severity');
+
+      default:
+        return asc
+          ? a.innerHTML.toLowerCase() > b.innerHTML.toLowerCase()
+          : a.innerHTML.toLowerCase() < b.innerHTML.toLowerCase();
+    }
+  },
+
+  sort : function (columnId, asc) {
+    var rows = null,
+        switching = true,
+        i, j, x, y, minIdx;
+
+    var table = document.getElementById('report-list');
+    var column = document.getElementById(columnId);
+    var cellIndex = column.cellIndex;
+
+    if (asc === undefined) {
+      asc = column.getAttribute('sort') === 'desc' ? false : true;
+    }
+
+    var n = table.rows.length;
+    for (i = 1; i < n - 1; i++)
+    {
+      minIdx = i;
+      for (j = i + 1; j < n; j++) {
+        x = table.rows[minIdx].getElementsByTagName('td')[cellIndex];
+        y = table.rows[j].getElementsByTagName('td')[cellIndex];
+        if (this.compare(columnId, x, y, asc)) {
+          minIdx = j;
+        }
+      }
+
+      if (minIdx !== i) {
+        table.rows[i].parentNode.insertBefore(
+          table.rows[minIdx], table.rows[i]);
+      }
+    }
+
+    table.querySelectorAll('th').forEach(function (column) {
+      column.removeAttribute('sort');
+      column.classList.remove('active');
+    });
+
+    column.classList.add('active');
+    column.setAttribute('sort', asc ? 'desc' : 'asc');
+    window.location.hash = '#sort=' + columnId + '&asc=' + (asc ? 1 : 0);
+  }
+};
+
+
+      window.onload = function () {
+        if (!browserCompatible) {
+          setNonCompatibleBrowserMessage();
+        } else {
+          BugList.init()
+        }
+      }
+    </script>
+  </head>
+  <body>
+  <div class="container">
+    <a href="statistics.html" class="button">Go To Statistics</a>
+    <table id="report-list">
+      
+                <tr>
+                  <th id="report-id">&nbsp;</th>
+                  <th id="file-path">File</th>
+                  <th id="severity">Severity</th>
+                  <th id="checker-name">Checker name</th>
+                  <th id="message">Message</th>
+                  <th id="bug-path-length">Bug path length</th>
+                  <th id="review-status">Review status</th>
+                </tr>
+                  <tr>
+                    <td>1</td>
+                    <td file="/home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c" line="7403">
+                      <a href="av_parsers.plist.html#reportHash=a1124f36b6460882d35bf767163f19cf">
+                        /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c @ Line&nbsp;7403
+                      </a>
+                    </td>
+                    <td class="severity" severity="high">
+                      <i class="severity-high"
+                         title="high"></i>
+                    </td>
+                    <td><a href="https://clang.llvm.org/docs/analyzer/checkers.html#core-nulldereference-c-c-objc" target="_blank">core.NullDereference</a></td>
+                    <td>Array access (from variable 'dst_ptr') results in a null pointer dereference</td>
+                    <td class="bug-path-length">13</td>
+                    <td class="review-status review-status-unreviewed">
+                      unreviewed
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>2</td>
+                    <td file="/home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c" line="7416">
+                      <a href="av_parsers.plist.html#reportHash=a1124f36b6460882d35bf767163f19cf">
+                        /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c @ Line&nbsp;7416
+                      </a>
+                    </td>
+                    <td class="severity" severity="high">
+                      <i class="severity-high"
+                         title="high"></i>
+                    </td>
+                    <td><a href="https://clang.llvm.org/docs/analyzer/checkers.html#core-nulldereference-c-c-objc" target="_blank">core.NullDereference</a></td>
+                    <td>Array access (from variable 'dst_ptr') results in a null pointer dereference</td>
+                    <td class="bug-path-length">13</td>
+                    <td class="review-status review-status-unreviewed">
+                      unreviewed
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>3</td>
+                    <td file="/home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c" line="7641">
+                      <a href="av_parsers.plist.html#reportHash=9428e22af312d80812a3ed923f6b05f1">
+                        /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c @ Line&nbsp;7641
+                      </a>
+                    </td>
+                    <td class="severity" severity="high">
+                      <i class="severity-high"
+                         title="high"></i>
+                    </td>
+                    <td><a href="https://clang.llvm.org/docs/analyzer/checkers.html#alpha-security-arraybound-c" target="_blank">alpha.security.ArrayBound</a></td>
+                    <td>Access out-of-bound array element (buffer overflow)</td>
+                    <td class="bug-path-length">86</td>
+                    <td class="review-status review-status-unreviewed">
+                      unreviewed
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>4</td>
+                    <td file="/home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c" line="7648">
+                      <a href="av_parsers.plist.html#reportHash=b4d0f82ede3b46415ef55c17ba62aec9">
+                        /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c @ Line&nbsp;7648
+                      </a>
+                    </td>
+                    <td class="severity" severity="high">
+                      <i class="severity-high"
+                         title="high"></i>
+                    </td>
+                    <td><a href="https://clang.llvm.org/docs/analyzer/checkers.html#core-uninitialized-assign-c" target="_blank">core.uninitialized.Assign</a></td>
+                    <td>Assigned value is garbage or undefined</td>
+                    <td class="bug-path-length">53</td>
+                    <td class="review-status review-status-unreviewed">
+                      unreviewed
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>5</td>
+                    <td file="/home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c" line="7660">
+                      <a href="av_parsers.plist.html#reportHash=a53d12434c2eb41d49e198a8e79d10b5">
+                        /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c @ Line&nbsp;7660
+                      </a>
+                    </td>
+                    <td class="severity" severity="high">
+                      <i class="severity-high"
+                         title="high"></i>
+                    </td>
+                    <td><a href="https://clang.llvm.org/docs/analyzer/checkers.html#alpha-security-arraybound-c" target="_blank">alpha.security.ArrayBound</a></td>
+                    <td>Access out-of-bound array element (buffer overflow)</td>
+                    <td class="bug-path-length">52</td>
+                    <td class="review-status review-status-unreviewed">
+                      unreviewed
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>6</td>
+                    <td file="/home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c" line="7663">
+                      <a href="av_parsers.plist.html#reportHash=cb331572e49dd0b2aad7a3ba222d8ca4">
+                        /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c @ Line&nbsp;7663
+                      </a>
+                    </td>
+                    <td class="severity" severity="high">
+                      <i class="severity-high"
+                         title="high"></i>
+                    </td>
+                    <td><a href="https://clang.llvm.org/docs/analyzer/checkers.html#alpha-security-arraybound-c" target="_blank">alpha.security.ArrayBound</a></td>
+                    <td>Access out-of-bound array element (buffer overflow)</td>
+                    <td class="bug-path-length">49</td>
+                    <td class="review-status review-status-unreviewed">
+                      unreviewed
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>7</td>
+                    <td file="/home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c" line="7674">
+                      <a href="av_parsers.plist.html#reportHash=7820609bc1c81d48c026ced2d2c0fd48">
+                        /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c @ Line&nbsp;7674
+                      </a>
+                    </td>
+                    <td class="severity" severity="high">
+                      <i class="severity-high"
+                         title="high"></i>
+                    </td>
+                    <td><a href="https://clang.llvm.org/docs/analyzer/checkers.html#core-callandmessage-c-c-objc" target="_blank">core.CallAndMessage</a></td>
+                    <td>2nd function call argument is an uninitialized value</td>
+                    <td class="bug-path-length">47</td>
+                    <td class="review-status review-status-unreviewed">
+                      unreviewed
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>8</td>
+                    <td file="/home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c" line="7827">
+                      <a href="av_parsers.plist.html#reportHash=04694ba9e3eac8e629d77fc5472c8f1d">
+                        /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c @ Line&nbsp;7827
+                      </a>
+                    </td>
+                    <td class="severity" severity="high">
+                      <i class="severity-high"
+                         title="high"></i>
+                    </td>
+                    <td><a href="https://clang.llvm.org/docs/analyzer/checkers.html#alpha-security-arraybound-c" target="_blank">alpha.security.ArrayBound</a></td>
+                    <td>Access out-of-bound array element (buffer overflow)</td>
+                    <td class="bug-path-length">79</td>
+                    <td class="review-status review-status-unreviewed">
+                      unreviewed
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>9</td>
+                    <td file="/home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c" line="7840">
+                      <a href="av_parsers.plist.html#reportHash=fb7c99f6a8e0866b1c667df81eac034d">
+                        /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c @ Line&nbsp;7840
+                      </a>
+                    </td>
+                    <td class="severity" severity="high">
+                      <i class="severity-high"
+                         title="high"></i>
+                    </td>
+                    <td><a href="https://clang.llvm.org/docs/analyzer/checkers.html#core-uninitialized-branch-c" target="_blank">core.uninitialized.Branch</a></td>
+                    <td>Branch condition evaluates to a garbage value</td>
+                    <td class="bug-path-length">64</td>
+                    <td class="review-status review-status-unreviewed">
+                      unreviewed
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>10</td>
+                    <td file="/home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c" line="9171">
+                      <a href="av_parsers.plist.html#reportHash=7ccdc31c13b76171e216c5f6a1afdc90">
+                        /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c @ Line&nbsp;9171
+                      </a>
+                    </td>
+                    <td class="severity" severity="low">
+                      <i class="severity-low"
+                         title="low"></i>
+                    </td>
+                    <td><a href="https://clang.llvm.org/docs/analyzer/checkers.html#deadcode-deadstores-c" target="_blank">deadcode.DeadStores</a></td>
+                    <td>Value stored to 'numblkscod' is never read</td>
+                    <td class="bug-path-length">1</td>
+                    <td class="review-status review-status-unreviewed">
+                      unreviewed
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>11</td>
+                    <td file="/home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c" line="11602">
+                      <a href="av_parsers.plist.html#reportHash=06bd88151d453df9d5428e66dfe783d3">
+                        /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c @ Line&nbsp;11602
+                      </a>
+                    </td>
+                    <td class="severity" severity="high">
+                      <i class="severity-high"
+                         title="high"></i>
+                    </td>
+                    <td><a href="https://clang.llvm.org/docs/analyzer/checkers.html#core-dividezero-c-c-objc" target="_blank">core.DivideZero</a></td>
+                    <td>Division by zero</td>
+                    <td class="bug-path-length">32</td>
+                    <td class="review-status review-status-unreviewed">
+                      unreviewed
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>12</td>
+                    <td file="/home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c" line="12193">
+                      <a href="av_parsers.plist.html#reportHash=f7910d3acba49d395e3c8bdbff408cfe">
+                        /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c @ Line&nbsp;12193
+                      </a>
+                    </td>
+                    <td class="severity" severity="high">
+                      <i class="severity-high"
+                         title="high"></i>
+                    </td>
+                    <td><a href="https://clang.llvm.org/docs/analyzer/checkers.html#core-callandmessage-c-c-objc" target="_blank">core.CallAndMessage</a></td>
+                    <td>3rd function call argument is an uninitialized value</td>
+                    <td class="bug-path-length">13</td>
+                    <td class="review-status review-status-unreviewed">
+                      unreviewed
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>13</td>
+                    <td file="/home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c" line="12287">
+                      <a href="av_parsers.plist.html#reportHash=66e2f810ebe7048a3d4287211d9455c6">
+                        /home/l0tus/workplace/GOSSIP/csabp/CSABlindSpot/gpac/issue2366/gpac-2.2.0/src/media_tools/av_parsers.c @ Line&nbsp;12287
+                      </a>
+                    </td>
+                    <td class="severity" severity="high">
+                      <i class="severity-high"
+                         title="high"></i>
+                    </td>
+                    <td><a href="https://clang.llvm.org/docs/analyzer/checkers.html#core-callandmessage-c-c-objc" target="_blank">core.CallAndMessage</a></td>
+                    <td>3rd function call argument is an uninitialized value</td>
+                    <td class="bug-path-length">8</td>
+                    <td class="review-status review-status-unreviewed">
+                      unreviewed
+                    </td>
+                  </tr>
+    </table>
+  </div>
+  </body>
+</html>
