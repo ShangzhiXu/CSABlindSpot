@@ -1,5 +1,6 @@
 > link: https://github.com/gpac/gpac/issues/2353
 
+This issue is signed as [CVE-2022-47657](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-47657)
 This bug exists in /media_tools/av_parsers.c:8273
 ![crash](./assets/crash.png)
 
@@ -77,12 +78,9 @@ typedef struct
 
 The check for "sps->rep_format_idx" is inefficient enough, which can be bypassed with followiing steps:
 1. First time call function `gf_hevc_read_sps_bs_internal()` with `sps->update_rep_format_flag == 1`
-2. Since 1, we update the `sps->rep_format_flag` by `gf_bs_read_int_log(bs, 8, "rep_format_idx")`
-3. Then the `if` judgement will eventually `return -1`
-4. Second time enter this function `gf_hevc_read_sps_bs_internal()`, with the `sps->update_rep_format_flag == 0` , and make sure `!(layer_id < MAX_LHVC_LAYERS)`, thus we can bypass all the judgement and keep the `sps->rep_format_idx` equals to 159.
-5. And finally trigger the oob with `sps->width = vps->rep_formats[sps->rep_format_idx].pic_width_luma_samples;`
-
-
-(The rep_formats[] is an array with the range of 16 and the sps->rep_format_idx is 159)
+2. Since 1, we update the `sps->rep_format_flag` to 1 by function `gf_bs_read_int_log(bs, 8, "rep_format_idx")`
+3. Then update the `sps->rep_format_idx` to 159 by function `gf_bs_read_int_log(bs, 8, "rep_format_idx");`, and the `if` judgement will eventually `return -1`
+4. Second time enter this function `gf_hevc_read_sps_bs_internal()`, with the `sps->update_rep_format_flag == 0` , and make sure `!(layer_id < MAX_LHVC_LAYERS)`, thus we can bypass all the `if` judgement and keep the `sps->rep_format_idx` equals to 159. And the program continues run till line 8273.
+5. And finally trigger the oob with `sps->width = vps->rep_formats[sps->rep_format_idx].pic_width_luma_samples;`. (The rep_formats[] is an array with the range of 16 and the sps->rep_format_idx is 159)
 
 However CSA can not recognize this bug might because the nested `if()` judgments and the sentences in `if()` might not be recognized.
