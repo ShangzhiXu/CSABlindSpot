@@ -8,7 +8,7 @@
 
 - [x] CVE-2022-27008
     https://github.com/nginx/njs/issues/471
-- [ ] CVE-2022-26981
+- [x] CVE-2022-26981
 - [ ] CVE-2021-45429
 - [ ] CVE-2021-46526
 - [ ] CVE-2021-46521
