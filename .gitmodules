@@ -5,3 +5,7 @@
 [submodule "CVE-2022-26981/liblouis"]
   path = CVE-2022-26981/liblouis
   url = git@github.com:liblouis/liblouis.git
+
+[submodule "CVE-2021-45429/yara"]
+	path = CVE-2021-45429/yara
+	url = git@github.com:VirusTotal/yara.git
