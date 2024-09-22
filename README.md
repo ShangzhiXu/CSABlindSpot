@@ -6,7 +6,7 @@
 
 ## TODO (Assigned to Zhenyun Lin)
 
-- [ ] CVE-2022-27008
+- [x] CVE-2022-27008
     https://github.com/nginx/njs/issues/471
 - [ ] CVE-2022-26981
 - [ ] CVE-2021-45429
