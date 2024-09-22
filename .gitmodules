@@ -9,3 +9,6 @@
 [submodule "CVE-2021-45429/yara"]
 	path = CVE-2021-45429/yara
 	url = git@github.com:VirusTotal/yara.git
+[submodule "CVE-2021-46526/mjs"]
+	path = CVE-2021-46526/mjs
+	url = git@github.com:cesanta/mjs.git
