@@ -10,8 +10,8 @@
     https://github.com/nginx/njs/issues/471
 - [x] CVE-2022-26981
 - [x] CVE-2021-45429
-- [x] CVE-2021-46526
-- [ ] CVE-2021-46521
+- [x] CVE-2021-46526 (not reproduced)
+- [x] CVE-2021-46521 (not reproduced)
 - [ ] CVE-2021-46513
 
 ### 1. CVE-2023-49287
