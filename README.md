@@ -12,7 +12,7 @@
 - [x] CVE-2021-45429
 - [x] CVE-2021-46526 (not reproduced)
 - [x] CVE-2021-46521 (not reproduced)
-- [ ] CVE-2021-46513
+- [x] CVE-2021-46513 (not reproduced)
 
 ### 1. CVE-2023-49287
 
