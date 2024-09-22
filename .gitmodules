@@ -1,3 +1,7 @@
 [submodule "CVE-2022-27008/njs"]
 	path = CVE-2022-27008/njs
 	url = git@github.com:nginx/njs.git
+
+[submodule "CVE-2022-26981/liblouis"]
+  path = CVE-2022-26981/liblouis
+  url = git@github.com:liblouis/liblouis.git
