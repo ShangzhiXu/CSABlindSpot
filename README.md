@@ -4,6 +4,16 @@
 
 ---
 
+## TODO (Assigned to Zhenyun Lin)
+
+- [x] CVE-2022-27008
+    https://github.com/nginx/njs/issues/471
+- [x] CVE-2022-26981
+- [x] CVE-2021-45429
+- [x] CVE-2021-46526 (not reproduced)
+- [x] CVE-2021-46521 (not reproduced)
+- [x] CVE-2021-46513 (not reproduced)
+
 ### 1. CVE-2023-49287
 
 **Source:** [CVE-2023-49287](https://nvd.nist.gov/vuln/detail/CVE-2023-49287)
